@@ -59,10 +59,21 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
-app.UseExceptionHandler();
-app.UseStatusCodePages();
+app.UseCors("Frontend");
+
+app.UseAuthentication();
+app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider
