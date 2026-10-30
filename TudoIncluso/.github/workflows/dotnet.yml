@@ -1,0 +1,29 @@
+﻿name: Testes do projeto
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restaurar dependências
+        run: dotnet restore TudoInclusolution.slnx
+
+      - name: Compilar projeto
+        run: dotnet build TudoInclusolution.slnx --no-restore
+
+      - name: Executar testes
+        run: dotnet test TudoInclusolution.slnx --no-build
