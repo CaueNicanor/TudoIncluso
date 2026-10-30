@@ -1,0 +1,6 @@
+@TudoIncluso_HostAddress = http://localhost:5175
+
+GET {{TudoIncluso_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

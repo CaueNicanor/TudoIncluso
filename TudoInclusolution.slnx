@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TudoIncluso.Tests/TudoIncluso.Tests.csproj" Id="032b11ab-1883-43c9-8ba9-627010006b32" />
+  <Project Path="TudoIncluso/TudoIncluso.csproj" />
+</Solution>

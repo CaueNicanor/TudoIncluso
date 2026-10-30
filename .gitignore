@@ -1,0 +1,15 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# .NET
+bin/
+obj/
+
+# Segredos e configurações locais
+appsettings.Development.json
+secrets.json
+
+# Docker
+.env
