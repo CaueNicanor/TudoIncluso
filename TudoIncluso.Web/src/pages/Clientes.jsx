@@ -31,6 +31,11 @@ function Clientes() {
         carregarClientes()
     }, [])
 
+    const clientesFiltrados = clientes.filter((cliente) =>
+        cliente.nome.toLowerCase().includes(pesquisa.toLowerCase()) ||
+        cliente.email.toLowerCase().includes(pesquisa.toLowerCase())
+    )
+
     return (
         <>
             <div className="welcome">

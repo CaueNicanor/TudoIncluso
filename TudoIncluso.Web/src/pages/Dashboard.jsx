@@ -1,12 +1,48 @@
 
-const ordens = [
-    { id: '#OS-001', cliente: 'Carlos Oliveira', aparelho: 'iPhone 13', defeito: 'Troca de bateria', status: 'Em andamento', valor: 'R$ 250,00' },
-    { id: '#OS-002', cliente: 'Mariana Santos', aparelho: 'Samsung Galaxy S22', defeito: 'Tela quebrada', status: 'Aberta', valor: 'R$ 450,00' },
-    { id: '#OS-003', cliente: 'Pedro Henrique', aparelho: 'Motorola Edge 40', defeito: 'Problema no carregamento', status: 'Concluída', valor: 'R$ 120,00' },
-    { id: '#OS-004', cliente: 'Ana Costa', aparelho: 'iPhone 12', defeito: 'Problema no áudio', status: 'Em andamento', valor: 'R$ 180,00' },
-]
+import { useEffect, useState } from 'react'
+import { apiRequest } from '../services/api'
 
 function Dashboard() {
+    const [ordens, setOrdens] = useState([])
+    const [carregando, setCarregando] = useState(true)
+    const [erro, setErro] = useState('')
+
+    useEffect(() => {
+        async function carregarOrdens() {
+            try {
+                const resposta = await apiRequest('/api/OrdemServico')
+                setOrdens(resposta.dados || resposta || [])
+            } catch (error) {
+                console.error('Erro ao carregar ordens:', error)
+                setErro('Não foi possível carregar as ordens.')
+            } finally {
+                setCarregando(false)
+            }
+        }
+
+        carregarOrdens()
+    }, [])
+
+    const total = ordens.length
+    const andamento = ordens.filter(o => o.status === 'Em andamento').length
+    const abertas = ordens.filter(o => o.status === 'Aberta').length
+    const concluidas = ordens.filter(o => o.status === 'Concluida').length
+
+    const recentes = [...ordens]
+        .sort((a, b) => new Date(b.dataEntrada) - new Date(a.dataEntrada))
+        .slice(0, 5)
+
+    function formatarValor(valor) {
+        return Number(valor || 0).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        })
+    }
+
+    function formatarStatus(status) {
+        return status === 'Concluida' ? 'Concluída' : status
+    }
+
     return (
         <>
             <div className="welcome">
@@ -14,31 +50,32 @@ function Dashboard() {
                     <h1>Visão geral</h1>
                     <p>Acompanhe o desempenho da sua assistência técnica.</p>
                 </div>
-                <button className="new-order">+ Nova ordem</button>
             </div>
+
+            {erro && <p>{erro}</p>}
 
             <div className="stats">
                 <article className="stat-card">
                     <span>Total de ordens</span>
-                    <strong>128</strong>
+                    <strong>{carregando ? '...' : total}</strong>
                     <small>Ordens cadastradas</small>
                 </article>
 
                 <article className="stat-card">
                     <span>Em andamento</span>
-                    <strong>24</strong>
+                    <strong>{carregando ? '...' : andamento}</strong>
                     <small>Reparos em execução</small>
                 </article>
 
                 <article className="stat-card">
                     <span>Aguardando atendimento</span>
-                    <strong>08</strong>
+                    <strong>{carregando ? '...' : abertas}</strong>
                     <small>Ordens abertas</small>
                 </article>
 
                 <article className="stat-card">
                     <span>Concluídas</span>
-                    <strong>96</strong>
+                    <strong>{carregando ? '...' : concluidas}</strong>
                     <small>Reparos finalizados</small>
                 </article>
             </div>
@@ -65,20 +102,32 @@ function Dashboard() {
                         </thead>
 
                         <tbody>
-                            {ordens.map((ordem) => (
-                                <tr key={ordem.id}>
-                                    <td>{ordem.id}</td>
-                                    <td>{ordem.cliente}</td>
-                                    <td>{ordem.aparelho}</td>
-                                    <td>{ordem.defeito}</td>
-                                    <td>
-                                        <span className={`status ${ordem.status === 'Concluída' ? 'done' : ordem.status === 'Aberta' ? 'open' : 'progress'}`}>
-                                            {ordem.status}
-                                        </span>
-                                    </td>
-                                    <td>{ordem.valor}</td>
+                            {carregando ? (
+                                <tr>
+                                    <td colSpan="6">Carregando ordens...</td>
                                 </tr>
-                            ))}
+                            ) : recentes.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6">Nenhuma ordem cadastrada.</td>
+                                </tr>
+                            ) : (
+                                recentes.map(ordem => (
+                                    <tr key={ordem.id}>
+                                        <td>OS-{String(ordem.id).padStart(3, '0')}</td>
+                                        <td>{ordem.usuario?.nome || ordem.cliente?.nome || 'Não informado'}</td>
+                                        <td>{ordem.modeloCelular}</td>
+                                        <td>{ordem.defeitoRelatado}</td>
+                                        <td>
+                                            <span className={`status ${ordem.status === 'Concluida' ? 'done' :
+                                                    ordem.status === 'Aberta' ? 'open' : 'progress'
+                                                }`}>
+                                                {formatarStatus(ordem.status)}
+                                            </span>
+                                        </td>
+                                        <td>{formatarValor(ordem.orcamento)}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

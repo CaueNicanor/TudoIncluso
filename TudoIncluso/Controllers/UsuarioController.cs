@@ -27,8 +27,11 @@ public class UsuarioController : ControllerBase
     public async Task<ActionResult<UsuarioRespostaDto>> Registrar(
         CriarUsuarioDto dto)
     {
+
+        var emailNormalizado = dto.Email.Trim().ToLowerInvariant();
+
         var emailExiste = await _context.Usuarios
-            .AnyAsync(u => u.Email == dto.Email);
+    .AnyAsync(u => u.Email.ToLower() == emailNormalizado);
 
         if (emailExiste)
         {
@@ -41,11 +44,11 @@ public class UsuarioController : ControllerBase
         var senhaHash = BCrypt.Net.BCrypt.HashPassword(dto.Senha);
 
         var usuario = new Usuario(
-            dto.Nome,
-            dto.Email,
-            senhaHash,
-            "Cliente"
-        );
+    dto.Nome,
+    emailNormalizado,
+    senhaHash,
+    "Cliente"
+);
 
         _context.Usuarios.Add(usuario);
         await _context.SaveChangesAsync();

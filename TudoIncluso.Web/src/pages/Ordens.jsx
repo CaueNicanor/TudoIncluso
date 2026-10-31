@@ -149,7 +149,7 @@ function Ordens() {
                 ordemServicoId: ordemSelecionada
             })
 
-            await apiRequest('/api/ServicoReparo', {
+            await apiRequest(`/api/ServicoReparo/ordem/${ordemSelecionada}`, {
                 method: 'POST',
                 body: JSON.stringify({
                     descricao: descricaoReparo,

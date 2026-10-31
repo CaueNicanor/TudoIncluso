@@ -1,5 +1,7 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { apiRequest } from './services/api'
 import {
     BrowserRouter,
     Routes,
@@ -20,13 +22,37 @@ import './App.css'
 function Layout() {
     const [darkMode, setDarkMode] = useState(false)
     const location = useLocation()
+    const [usuario, setUsuario] = useState(null)
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        async function carregarPerfil() {
+            try {
+                const resposta = await apiRequest('/api/Usuario/me')
+                setUsuario(resposta)
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error)
+                sessionStorage.removeItem('token')
+                navigate('/login', { replace: true })
+            }
+        }
+
+        carregarPerfil()
+    }, [navigate])
+    function sair() {
+        sessionStorage.removeItem('token')
+        navigate('/login', { replace: true })
+    }
 
     const paginas = {
         '/': 'Painel',
         '/ordens': 'Ordens de serviço',
         '/servicos': 'Catálogo de serviços',
         '/clientes': 'Clientes',
+
     }
+
+
 
     const paginaAtual = paginas[location.pathname] || 'Painel'
 
@@ -63,10 +89,13 @@ function Layout() {
 
                 <div className="sidebar-bottom">
                     <div className="profile">
-                        <div className="avatar">AD</div>
+                        <div className="avatar">
+                            {usuario?.nome?.substring(0, 2).toUpperCase() || 'US'}
+                        </div>
+
                         <div>
-                            <strong>Administrador</strong>
-                            <span>Administrador</span>
+                            <strong>{usuario?.nome || 'Carregando...'}</strong>
+                            <span>{usuario?.perfil || 'Usuário'}</span>
                         </div>
                     </div>
                 </div>
@@ -85,9 +114,9 @@ function Layout() {
                             {darkMode ? '☀️ Modo claro' : '🌙 Modo escuro'}
                         </button>
 
-                        <div className="top-user">
-                            Administrador <span>▾</span>
-                        </div>
+                        <button className="theme-toggle" onClick={sair}>
+                            Sair da conta
+                        </button>
                     </div>
                 </header>
 
