@@ -82,9 +82,11 @@ function Layout() {
                         ⚙ <span>Catálogo de serviços</span>
                     </NavLink>
 
-                    <NavLink to="/clientes">
-                        ♙ <span>Clientes</span>
-                    </NavLink>
+                    {usuario?.perfil === 'Admin' && (
+                        <NavLink to="/clientes">
+                            ♙ <span>Clientes</span>
+                        </NavLink>
+                    )}
                 </nav>
 
                 <div className="sidebar-bottom">
@@ -125,7 +127,14 @@ function Layout() {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/ordens" element={<Ordens />} />
                         <Route path="/servicos" element={<Servicos />} />
-                        <Route path="/clientes" element={<Clientes />} />
+                        <Route
+                            path="/clientes"
+                            element={
+                                usuario?.perfil === 'Admin'
+                                    ? <Clientes />
+                                    : <Navigate to="/" replace />
+                            }
+                        />
                     </Routes>
 
                     <footer>
