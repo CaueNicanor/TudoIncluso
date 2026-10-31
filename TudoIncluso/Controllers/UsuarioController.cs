@@ -161,5 +161,23 @@ public class UsuarioController : ControllerBase
         return Ok(resposta);
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> ListarClientes()
+    {
+        var clientes = await _context.Usuarios
+            .Where(u => u.Perfil == "Cliente")
+            .Select(u => new
+            {
+                u.Id,
+                u.Nome,
+                u.Email,
+                Ordens = u.OrdensServico.Count()
+            })
+            .ToListAsync();
+
+        return Ok(clientes);
+    }
+
 
 }
