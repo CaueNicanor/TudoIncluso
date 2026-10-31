@@ -1,10 +1,20 @@
 
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom'
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+    NavLink,
+    useLocation,
+    Navigate,
+} from 'react-router-dom'
+
 import Dashboard from './pages/Dashboard'
 import Ordens from './pages/Ordens'
 import Servicos from './pages/Servicos'
 import Clientes from './pages/Clientes'
+import Login from './pages/Login'
+
 import './App.css'
 
 function Layout() {
@@ -98,10 +108,23 @@ function Layout() {
     )
 }
 
+function RotasProtegidas() {
+    const token = sessionStorage.getItem('token')
+
+    if (!token) {
+        return <Navigate to="/login" replace />
+    }
+
+    return <Layout />
+}
+
 function App() {
     return (
         <BrowserRouter>
-            <Layout />
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/*" element={<RotasProtegidas />} />
+            </Routes>
         </BrowserRouter>
     )
 }

@@ -1,5 +1,6 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { apiRequest } from '../services/api'
 
 const clientesIniciais = [
     { id: 1, nome: 'Carlos Oliveira', email: 'carlos@email.com', telefone: '(28) 99999-1111', ordens: 3 },
@@ -9,13 +10,26 @@ const clientesIniciais = [
 ]
 
 function Clientes() {
-    const [clientes] = useState(clientesIniciais)
+    const [clientes, setClientes] = useState([])
     const [pesquisa, setPesquisa] = useState('')
+    const [carregando, setCarregando] = useState(true)
+    const [erro, setErro] = useState('')
 
-    const clientesFiltrados = clientes.filter((cliente) =>
-        cliente.nome.toLowerCase().includes(pesquisa.toLowerCase()) ||
-        cliente.email.toLowerCase().includes(pesquisa.toLowerCase())
-    )
+    useEffect(() => {
+        async function carregarClientes() {
+            try {
+                const resposta = await apiRequest('/api/Usuario')
+                setClientes(resposta)
+            } catch (error) {
+                console.error(error)
+                setErro('Não foi possível carregar os clientes.')
+            } finally {
+                setCarregando(false)
+            }
+        }
+
+        carregarClientes()
+    }, [])
 
     return (
         <>
@@ -73,21 +87,27 @@ function Clientes() {
                         </thead>
 
                         <tbody>
-                            {clientesFiltrados.map((cliente) => (
-                                <tr key={cliente.id}>
-                                    <td>{cliente.nome}</td>
-                                    <td>{cliente.email}</td>
-                                    <td>{cliente.telefone}</td>
-                                    <td>{cliente.ordens}</td>
-                                </tr>
-                            ))}
-
-                            {clientesFiltrados.length === 0 && (
+                            {carregando ? (
                                 <tr>
-                                    <td colSpan="4">
-                                        Nenhum cliente encontrado.
-                                    </td>
+                                    <td colSpan="4">Carregando clientes...</td>
                                 </tr>
+                            ) : erro ? (
+                                <tr>
+                                    <td colSpan="4">{erro}</td>
+                                </tr>
+                            ) : clientesFiltrados.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4">Nenhum cliente encontrado.</td>
+                                </tr>
+                            ) : (
+                                clientesFiltrados.map((cliente) => (
+                                    <tr key={cliente.id}>
+                                        <td>{cliente.nome}</td>
+                                        <td>{cliente.email}</td>
+                                        <td>Não informado</td>
+                                        <td>{cliente.ordens}</td>
+                                    </tr>
+                                ))
                             )}
                         </tbody>
                     </table>
